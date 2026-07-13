@@ -5,12 +5,12 @@ DNS="10.156.78.198"
 
 SERVICE=""
 while IFS= read -r svc; do
-	ip=$(networksetup -getinfo "$svc" 2>/dev/null | awk '/^IP address:/ {print $3}')
+	ip=$(networksetup -getinfo "$svc" 2>/dev/null | awk '/^IP address:/ {print $3}') || true
 	if [[ "$ip" =~ ^10\.156\.(78|79)\. ]]; then
 		SERVICE="$svc"
 		break
 	fi
-done < <(networksetup -listallnetworkservices | grep -v '^\*')
+done < <(networksetup -listallnetworkservices 2>/dev/null | grep -vE '^\*|asterisk')
 
 if [[ -z "$SERVICE" ]]; then
 	echo "Error: not connected to the TrickFire network (10.156.78/79.x). Connect first and retry."
