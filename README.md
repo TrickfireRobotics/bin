@@ -29,4 +29,4 @@ curl -fsSL https://raw.githubusercontent.com/TrickfireRobotics/bin/main/use-tf-d
 irm https://raw.githubusercontent.com/TrickfireRobotics/bin/main/use-tf-dns-windows.ps1 | iex
 ```
 
-Each script prints an undo command if you ever need to revert.s
+Each script prints an undo command if you ever need to revert.
