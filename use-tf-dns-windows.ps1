@@ -1,11 +1,15 @@
 $dns = "10.156.78.198"
 
-$adapter = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -First 1
-if (-not $adapter) {
-    Write-Error "No active network adapter found."
+$addr = Get-NetIPAddress -AddressFamily IPv4 |
+    Where-Object { $_.IPAddress -match '^10\.156\.(78|79)\.' } |
+    Select-Object -First 1
+
+if (-not $addr) {
+    Write-Error "Not connected to the TrickFire network (10.156.78/79.x). Connect first and retry."
     exit 1
 }
 
-Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses $dns
-Write-Host "DNS set to $dns for '$($adapter.Name)'."
-Write-Host "To undo: Set-DnsClientServerAddress -InterfaceIndex $($adapter.InterfaceIndex) -ResetServerAddresses"
+Set-DnsClientServerAddress -InterfaceIndex $addr.InterfaceIndex -ServerAddresses $dns, "9.9.9.9"
+Set-DnsClient -InterfaceIndex $addr.InterfaceIndex -ConnectionSpecificSuffix "lan"
+Write-Host "DNS configured for interface '$((Get-NetAdapter -InterfaceIndex $addr.InterfaceIndex).Name)' (TF network only, other adapters untouched)."
+Write-Host "To undo: Set-DnsClientServerAddress -InterfaceIndex $($addr.InterfaceIndex) -ResetServerAddresses"
