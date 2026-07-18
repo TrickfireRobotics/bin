@@ -8,23 +8,23 @@ DASHBOARD_RUNNER="actions.runner.TrickfireRobotics-dashboard.tfserver.service"
 DASHBOARD_PAGE="trickfire-dashboard.service"
 DOCS_CLOUDFLARE="cloudflared-trickfire-docs.service"
 DOCS_RUNNER="actions.runner.TrickfireRobotics.docs.service"
-DOCS_PAGE="trickfire-docs.service"
+DOCS_PAGE="nginx.service"
 
 SERVICES=(
-  "DNS                              :$DNS"
-  "Minecraft                        :$MINECRAFT"
-  "Dashboard Cloudflare Tunnel      :$DASHBOARD_CLOUDFLARE"
-  "Dashboard GitHub Runner          :$DASHBOARD_RUNNER"
-  "Dashboard Page                   :$DASHBOARD_PAGE"
-  "Docs Cloudflare Tunnel           :$DOCS_CLOUDFLARE"
-  "Docs GitHub Runner               :$DOCS_RUNNER"
-  "Docs Page                        :$DOCS_PAGE"
+	"DNS                              :$DNS"
+	"Minecraft                        :$MINECRAFT"
+	"Dashboard Cloudflare Tunnel      :$DASHBOARD_CLOUDFLARE"
+	"Dashboard GitHub Runner          :$DASHBOARD_RUNNER"
+	"Dashboard Page                   :$DASHBOARD_PAGE"
+	"Docs Cloudflare Tunnel           :$DOCS_CLOUDFLARE"
+	"Docs GitHub Runner               :$DOCS_RUNNER"
+	"Docs Page                        :$DOCS_PAGE"
 )
 
-G='\033[38;2;166;227;161m'  # green
-P='\033[38;2;245;194;231m'  # pink
-R='\033[38;2;243;139;168m'  # red
-Y='\033[38;2;249;226;175m'  # yellow
+G='\033[38;2;166;227;161m' # green
+P='\033[38;2;245;194;231m' # pink
+R='\033[38;2;243;139;168m' # red
+Y='\033[38;2;249;226;175m' # yellow
 D='\033[2m'
 B='\033[1m'
 RS='\033[0m'
@@ -38,22 +38,30 @@ printf "  ${D}%s${RS}  ·  up %s  ·  load %s\n" "$hostname" "$uptime_str" "$loa
 echo ""
 
 for entry in "${SERVICES[@]}"; do
-  label="${entry%%:*}"
-  svc="${entry##*:}"
-  status=$(systemctl is-active "$svc" 2>/dev/null)
+	label="${entry%%:*}"
+	svc="${entry##*:}"
+	status=$(systemctl is-active "$svc" 2>/dev/null)
 
-  case "$status" in
-    active)
-      dot="${G}●${RS}"; state="${G}running${RS}" ;;
-    failed)
-      dot="${R}●${RS}"; state="${R}failed${RS}" ;;
-    inactive)
-      dot="${D}●${RS}"; state="${D}stopped${RS}" ;;
-    *)
-      dot="${Y}●${RS}"; state="${Y}${status:-unknown}${RS}" ;;
-  esac
+	case "$status" in
+	active)
+		dot="${G}●${RS}"
+		state="${G}running${RS}"
+		;;
+	failed)
+		dot="${R}●${RS}"
+		state="${R}failed${RS}"
+		;;
+	inactive)
+		dot="${D}●${RS}"
+		state="${D}stopped${RS}"
+		;;
+	*)
+		dot="${Y}●${RS}"
+		state="${Y}${status:-unknown}${RS}"
+		;;
+	esac
 
-  printf "  %b  %-20s %b\n" "$dot" "$label" "$state"
+	printf "  %b  %-20s %b\n" "$dot" "$label" "$state"
 done
 
 echo ""
