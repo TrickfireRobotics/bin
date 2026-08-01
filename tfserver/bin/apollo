@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Serial console for the Apollo AGX Orin dev kit, connected via the debug
+# UART cable. Logs the session to ~/minicom-orin.log.
+
+DEVICE="/dev/ttyACM0"
+BAUD="115200"
+LOG="$HOME/minicom-orin.log"
+
+exec sudo minicom -D "$DEVICE" -b "$BAUD" -C "$LOG"
