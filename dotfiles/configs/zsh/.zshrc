@@ -1,28 +1,4 @@
-export EDITOR=nvim
-export VISUAL=nvim
-
 typeset -U path
-path=(
-	"$HOME/bin/dotfiles/shared"
-	"$HOME/.local/bin"
-	"/sbin"
-	$path
-)
-
-case "$(hostname)" in
-tfserver)
-	export PATH="$HOME/bin/dotfiles/tfserver:$PATH"
-	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/tfserver.toml"
-	;;
-apollo)
-	export PATH="$HOME/bin/dotfiles/apollo:$PATH"
-	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/apollo.toml"
-	;;
-viator)
-	export PATH="$HOME/bin/dotfiles/viator:$PATH"
-	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/viator.toml"
-	;;
-esac
 
 # ----------------------------------- opts ----------------------------------- #
 
@@ -43,29 +19,17 @@ bindkey '^[[B' history-search-forward
 bindkey '^[[1;5C' forward-word
 bindkey '^[[1;5D' backward-word
 
-# ---------------------------------- aliases --------------------------------- #
-
-alias c='clear'
-alias d='trash'
-alias s='clear && services'
-alias n='clear && fastfetch'
-alias ls='echo && eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions'
-alias lsa='echo && eza --color=always --long --git --icons=always'
-alias lsaa='echo && eza --color=always --long --git --icons=always -a'
-alias lst='echo && eza --color=always --tree --git --no-filesize --icons=always --no-time --no-user --no-permissions'
-alias cd='z'
-alias ssh='TERM="xterm-256color" ssh'
-
 # ---------------------------------- plugins --------------------------------- #
-
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh)"
 
 source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#585b70'
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# ----------------------------------- shared ---------------------------------- #
+
+source "$HOME/bin/dotfiles/shared/shellrc.sh"
 
 # ---------------------------------- startup --------------------------------- #
 
