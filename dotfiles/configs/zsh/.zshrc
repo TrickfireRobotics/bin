@@ -6,7 +6,7 @@ path=(
 	"$HOME/bin/dotfiles/shared"
 	"$HOME/.local/bin"
 	"/sbin"
-	"$PATH"
+	$path
 )
 
 if [[ $(hostname) == "tfserver" ]]; then
