@@ -9,11 +9,11 @@ tfserver)
 	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/tfserver.toml"
 	;;
 apollo)
-	export PATH="$HOME/bin/dotfiles/rover:$PATH"
+	export PATH="$HOME/bin/dotfiles/apollo:$PATH"
 	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/apollo.toml"
 	;;
 viator)
-	export PATH="$HOME/bin/dotfiles/rover:$PATH"
+	export PATH="$HOME/bin/dotfiles/viator:$PATH"
 	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/viator.toml"
 	;;
 esac
