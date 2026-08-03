@@ -54,7 +54,7 @@ alias lsa='echo && eza --color=always --long --git --icons=always'
 alias lsaa='echo && eza --color=always --long --git --icons=always -a'
 alias lst='echo && eza --color=always --tree --git --no-filesize --icons=always --no-time --no-user --no-permissions'
 alias cd='z'
-alias ssh='TERM="xterm-256color"'
+alias ssh='TERM="xterm-256color" ssh'
 
 # ---------------------------------- plugins --------------------------------- #
 
