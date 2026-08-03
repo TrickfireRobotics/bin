@@ -1,31 +1,39 @@
-# PATH
-export PATH="$HOME/bin/tfserver/bin:$HOME/.local/bin:$PATH:/sbin"
+export EDITOR=nvim
+export VISUAL=nvim
 
-# Starship prompt
-eval "$(starship init zsh)"
+typeset -U path
+path=(
+	"$HOME/bin/dotfiles/shared"
+	"$HOME/.local/bin"
+	"/sbin"
+	"$PATH"
+)
 
-# History
+if [[ $(hostname) == "tfserver" ]]; then
+	export PATH="$HOME/bin/dotfiles/tfserver:$PATH"
+fi
+
+# ----------------------------------- opts ----------------------------------- #
+
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 setopt share_history hist_ignore_dups hist_ignore_space
 
-# Completion
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
-# Key bindings
+setopt auto_cd
+
 bindkey -e
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 bindkey '^[[1;5C' forward-word
 bindkey '^[[1;5D' backward-word
 
-# zoxide
-eval "$(zoxide init zsh)"
+# ---------------------------------- aliases --------------------------------- #
 
-# Aliases
 alias c='clear'
 alias d='trash'
 alias s='clear && services'
@@ -36,20 +44,19 @@ alias lsaa='echo && eza --color=always --long --git --icons=always -a'
 alias lst='echo && eza --color=always --tree --git --no-filesize --icons=always --no-time --no-user --no-permissions'
 alias cd='z'
 
-# Misc
-setopt auto_cd
+# ---------------------------------- plugins --------------------------------- #
 
-# Plugins (syntax-highlighting must be last)
+eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
+
 source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#585b70'
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-# Editor
-export EDITOR=nvim
-export VISUAL=nvim
+# ---------------------------------- startup --------------------------------- #
 
-# Show service status on login
-services
-
+if [[ $(hostname) == "tfserver" ]]; then
+	services
+fi
