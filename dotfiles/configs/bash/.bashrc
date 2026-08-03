@@ -7,6 +7,12 @@ if [[ $(hostname) == "tfserver" ]]; then
 	export PATH="$HOME/bin/dotfiles/tfserver:$PATH"
 fi
 
+case "$(hostname)" in
+tfserver) export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/tfserver.toml" ;;
+apollo) export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/apollo.toml" ;;
+viator) export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/viator.toml" ;;
+esac
+
 # ----------------------------------- opts ----------------------------------- #
 
 HISTFILE=~/.bash_history
