@@ -57,6 +57,7 @@ eval "$(zoxide init bash)"
 
 # ---------------------------------- startup --------------------------------- #
 
+clear
 case "$(hostname)" in
 apollo | viator) hello ;;
 esac
