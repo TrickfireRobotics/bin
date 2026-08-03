@@ -3,14 +3,19 @@ export VISUAL=nvim
 
 export PATH="$HOME/bin/dotfiles/shared:$HOME/.local/bin:/sbin:$PATH"
 
-if [[ $(hostname) == "tfserver" ]]; then
-	export PATH="$HOME/bin/dotfiles/tfserver:$PATH"
-fi
-
 case "$(hostname)" in
-tfserver) export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/tfserver.toml" ;;
-apollo) export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/apollo.toml" ;;
-viator) export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/viator.toml" ;;
+tfserver)
+	export PATH="$HOME/bin/dotfiles/tfserver:$PATH"
+	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/tfserver.toml"
+	;;
+apollo)
+	export PATH="$HOME/bin/dotfiles/apollo:$PATH"
+	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/apollo.toml"
+	;;
+viator)
+	export PATH="$HOME/bin/dotfiles/viator:$PATH"
+	export STARSHIP_CONFIG="$HOME/bin/dotfiles/starship/viator.toml"
+	;;
 esac
 
 # ----------------------------------- opts ----------------------------------- #
@@ -48,3 +53,9 @@ alias cd='z'
 
 eval "$(starship init bash)"
 eval "$(zoxide init bash)"
+
+# ---------------------------------- startup --------------------------------- #
+
+case "$(hostname)" in
+apollo | viator) hello ;;
+esac

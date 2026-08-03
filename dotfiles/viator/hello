@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Startup greeting for viator, a Trickfire rover.
+
+C='\033[38;2;203;166;247m' # mauve
+D='\033[2m'
+B='\033[1m'
+RS='\033[0m'
+
+hostname=$(hostname)
+uptime_str=$(uptime -p 2>/dev/null | sed 's/^up //')
+load=$(cut -d' ' -f1 /proc/loadavg)
+ip=$(hostname -I 2>/dev/null | awk '{print $1}')
+disk=$(df -h --output=pcent / 2>/dev/null | tail -1 | tr -d ' ')
+
+temp=""
+if [ -f /sys/class/thermal/thermal_zone0/temp ]; then
+	temp_raw=$(cat /sys/class/thermal/thermal_zone0/temp)
+	temp=$(awk -v t="$temp_raw" 'BEGIN { printf "%.1f°C", t / 1000 }')
+fi
+
+echo ""
+printf "  ${B}${C}%s${RS}  ${D}·${RS}  up %s  ${D}·${RS}  load %s\n" "$hostname" "$uptime_str" "$load"
+echo ""
+printf "  %-6s %s\n" "IP" "${ip:-unknown}"
+printf "  %-6s %s\n" "Disk" "${disk:-unknown}"
+[ -n "$temp" ] && printf "  %-6s %s\n" "Temp" "$temp"
+echo ""
