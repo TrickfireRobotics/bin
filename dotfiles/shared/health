@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ $EUID -ne 0 ]]; then
+	echo "Run as root: sudo $0" >&2
+	exit 1
+fi
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -27,13 +32,11 @@ printf "${BOLD}${CYAN}  %s%s${RESET}\n" "$HOST" "${MODEL:+  ($MODEL)}"
 printf "${BOLD}${CYAN}------------------------------------------${RESET}\n"
 
 # --- Power mode ---
-power_mode=$(sudo -n nvpmodel -q 2>/dev/null | grep "NV Power Mode" | cut -d: -f2 | xargs)
+power_mode=$(nvpmodel -q 2>/dev/null | grep "NV Power Mode" | cut -d: -f2 | xargs)
 if [[ "$power_mode" == "MAXN" ]]; then
 	ok "Power mode" "$power_mode"
-elif [[ -z "$power_mode" ]]; then
-	warn "Power mode" "unknown  (needs passwordless sudo for nvpmodel)"
 else
-	warn "Power mode" "$power_mode  (expected MAXN)"
+	warn "Power mode" "${power_mode:-unknown}  (expected MAXN)"
 fi
 
 # --- CPUs ---
@@ -45,7 +48,15 @@ else
 fi
 
 # --- GPU ---
-gpu_freq=$(cat /sys/class/devfreq/*/cur_freq 2>/dev/null | head -1)
+gpu_freq=""
+for d in /sys/class/devfreq/*; do
+	case "$(basename "$d")" in
+	*ga10b* | *gpu*)
+		gpu_freq=$(cat "$d/cur_freq" 2>/dev/null)
+		break
+		;;
+	esac
+done
 if [[ -n "$gpu_freq" ]]; then
 	gpu_mhz=$((gpu_freq / 1000000))
 	if [[ $gpu_mhz -ge 1000 ]]; then
@@ -58,33 +69,32 @@ else
 fi
 
 # --- Fan ---
-fan_profile=$(cat /sys/devices/platform/thermal_fan_est/fan_profile 2>/dev/null)
 fan_pwm=$(cat /sys/class/hwmon/hwmon*/pwm1 2>/dev/null | head -1)
 
-if [[ "$fan_pwm" == "255" || "$fan_profile" == full* ]]; then
-	ok "Fan profile" "full  (pwm=${fan_pwm:-?})"
-elif [[ "$fan_profile" == "quiet" || "$fan_profile" == "cool" ]]; then
-	fail "Fan profile" "$fan_profile  (should be full, pwm=${fan_pwm:-?})"
+if [[ "$fan_pwm" == "255" ]]; then
+	ok "Fan speed" "full  (pwm=$fan_pwm)"
 else
-	warn "Fan profile" "${fan_profile:-unknown}  (pwm=${fan_pwm:-?})"
+	warn "Fan speed" "${fan_pwm:-unknown}/255  (expected full/255)"
 fi
 
 # --- Thermals ---
-while IFS=$'\t' read -r zone temp_raw; do
-	[[ -z "$zone" || -z "$temp_raw" ]] && continue
+for tz in /sys/devices/virtual/thermal/thermal_zone*; do
+	[[ -f "$tz/type" && -f "$tz/temp" ]] || continue
+	zone=$(<"$tz/type")
+	temp_raw=$(<"$tz/temp")
+	[[ -z "$temp_raw" || "$temp_raw" -lt 0 ]] && continue
 	temp_c=$((temp_raw / 1000))
 	if [[ $temp_c -ge 80 ]]; then
 		fail "Temp: $zone" "${temp_c}°C  (critical)"
 	elif [[ $temp_c -ge 65 ]]; then
 		warn "Temp: $zone" "${temp_c}°C  (warm)"
 	fi
-done < <(paste /sys/devices/virtual/thermal/thermal_zone*/type \
-	/sys/devices/virtual/thermal/thermal_zone*/temp 2>/dev/null)
+done
 
 # --- Network ---
 eth_carrier=$(cat /sys/class/net/eth0/carrier 2>/dev/null)
 active_iface=$(ip route get 8.8.8.8 2>/dev/null | grep -oP "dev \K\S+")
-wifi_pm=$(iwconfig wlan0 2>/dev/null | grep -oP "Power Management:\K\S+")
+wifi_pm=$(iw dev wlan0 get power_save 2>/dev/null | grep -oP "Power save: \K\S+")
 
 if [[ "$eth_carrier" == "1" ]]; then
 	ok "Ethernet" "connected"
@@ -99,19 +109,21 @@ else
 fi
 
 # --- Services ---
-svc_jetson=$(systemctl is-active jetson-clocks.service 2>/dev/null)
-svc_wifi=$(systemctl is-active wifi-disable-powersave.service 2>/dev/null)
+# nvpmodel.service is a oneshot unit: it runs at boot and goes back to
+# "inactive" on success, so is-active would always false-fail here.
+svc_nvpmodel=$(systemctl is-failed nvpmodel.service 2>/dev/null)
+svc_nvfancontrol=$(systemctl is-active nvfancontrol.service 2>/dev/null)
 
-if [[ "$svc_jetson" == "active" ]]; then
-	ok "jetson-clocks.service" "active"
+if [[ "$svc_nvpmodel" != "failed" ]]; then
+	ok "nvpmodel.service" "ran successfully"
 else
-	fail "jetson-clocks.service" "${svc_jetson:-inactive}"
+	fail "nvpmodel.service" "failed"
 fi
 
-if [[ "$svc_wifi" == "active" ]]; then
-	ok "wifi-disable-powersave" "active"
+if [[ "$svc_nvfancontrol" == "active" ]]; then
+	ok "nvfancontrol.service" "active"
 else
-	fail "wifi-disable-powersave" "${svc_wifi:-inactive}"
+	fail "nvfancontrol.service" "${svc_nvfancontrol:-inactive}"
 fi
 
 printf "\n"
