@@ -39,11 +39,15 @@ else
 fi
 
 # --- CPUs ---
+# Expected range is derived from the actual core count so this works across
+# boards with different CPU counts (e.g. 8-core vs 12-core Orin variants).
+total_cpus=$(nproc --all 2>/dev/null)
+expected_cpu_range="0-$((total_cpus - 1))"
 cpu_online=$(cat /sys/devices/system/cpu/online 2>/dev/null)
-if [[ "$cpu_online" == "0-7" ]]; then
-	ok "CPUs online" "all 8  ($cpu_online)"
+if [[ -n "$total_cpus" && "$cpu_online" == "$expected_cpu_range" ]]; then
+	ok "CPUs online" "all $total_cpus  ($cpu_online)"
 else
-	warn "CPUs online" "${cpu_online:-unknown}  (expected 0-7)"
+	warn "CPUs online" "${cpu_online:-unknown}  (expected $expected_cpu_range)"
 fi
 
 # --- GPU ---
@@ -91,12 +95,28 @@ for tz in /sys/devices/virtual/thermal/thermal_zone*; do
 done
 
 # --- Network ---
-eth_carrier=$(cat /sys/class/net/eth0/carrier 2>/dev/null)
+# Interface names vary by L4T predictable-naming scheme (eth0/wlan0 vs
+# end0/wlP1p1s0 etc.), so detect the real physical ethernet and wifi
+# interfaces instead of hardcoding names.
+eth_iface=""
+for d in /sys/class/net/*; do
+	ifn=$(basename "$d")
+	[[ -e "$d/wireless" ]] && continue
+	case "$(readlink -f "$d")" in
+	*/devices/virtual/*) continue ;;
+	esac
+	[[ "$(cat "$d/type" 2>/dev/null)" == "1" ]] || continue
+	eth_iface="$ifn"
+	break
+done
+wifi_iface=$(iw dev 2>/dev/null | awk '$1=="Interface"{print $2; exit}')
+
+eth_carrier=$(cat "/sys/class/net/${eth_iface}/carrier" 2>/dev/null)
 active_iface=$(ip route get 8.8.8.8 2>/dev/null | grep -oP "dev \K\S+")
-wifi_pm=$(iw dev wlan0 get power_save 2>/dev/null | grep -oP "Power save: \K\S+")
+wifi_pm=$(iw dev "$wifi_iface" get power_save 2>/dev/null | grep -oP "Power save: \K\S+")
 
 if [[ "$eth_carrier" == "1" ]]; then
-	ok "Ethernet" "connected"
+	ok "Ethernet" "connected  (${eth_iface})"
 else
 	warn "Ethernet" "no carrier  (using ${active_iface:-unknown})"
 fi
