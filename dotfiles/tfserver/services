@@ -19,20 +19,20 @@ SERVICES=(
 	"Docs Page                        :$DOCS_PAGE"
 )
 
+S='\033[38;2;116;199;236m' # sapphire
 G='\033[38;2;166;227;161m' # green
-P='\033[38;2;245;194;231m' # pink
 R='\033[38;2;243;139;168m' # red
 Y='\033[38;2;249;226;175m' # yellow
 D='\033[2m'
 B='\033[1m'
 RS='\033[0m'
 
+hostname=$(hostname)
 uptime_str=$(uptime -p 2>/dev/null | sed 's/^up //')
 load=$(cut -d' ' -f1 /proc/loadavg)
-hostname=$(hostname)
 
 echo ""
-printf "  ${D}%s${RS}  ·  up %s  ·  load %s\n" "$hostname" "$uptime_str" "$load"
+printf "  ${B}${S}%s${RS}  ${D}·${RS}  up %s  ${D}·${RS}  load %s\n" "$hostname" "$uptime_str" "$load"
 echo ""
 
 for entry in "${SERVICES[@]}"; do
