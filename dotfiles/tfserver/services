@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # Names of services
-DNS="dnsmasq.service"
 MINECRAFT="minecraft.service"
 DASHBOARD_CLOUDFLARE="cloudflared-trickfire-dashboard.service"
 DASHBOARD_RUNNER="actions.runner.TrickfireRobotics-dashboard.tfserver.service"
