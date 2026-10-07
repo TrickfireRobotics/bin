@@ -23,7 +23,9 @@ source "$HOME/bin/dotfiles/shared/shellrc.sh"
 
 # ---------------------------------- startup --------------------------------- #
 
-clear
-case "$(hostname)" in
-apollo | viator) hello ;;
-esac
+if [[ $- == *i* ]]; then
+	clear
+	case "$(hostname)" in
+	apollo | viator) hello ;;
+	esac
+fi
